@@ -1,4 +1,5 @@
 const Quiz = require('../models/quiz');
+const QuizResult = require('../models/quizResult'); 
 const ObjectId = require('mongoose').Types.ObjectId;
 
 exports.list = async (req, res) => {
@@ -75,12 +76,21 @@ exports.submitQuiz = async (req, res) => {
         })
       });
     });
-    setTimeout(() => {
+    setTimeout(async () => {
+
+      const resultInMark = resultCount / req.body.length * 100+ ' %'
+      const resultData = await QuizResult({
+        userId: req.user.id,
+        result: resultInMark
+      });
+      resultData.save();
+
       res.status(200).json({
         message: "Your result", 
         currect_answer: resultCount, 
-        mark: resultCount / req.body.length * 100+ ' %'
+        mark: resultInMark
       })
+      
     }, 2000);
 
   }else{
