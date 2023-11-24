@@ -35,7 +35,7 @@ exports.loginUser = async(req, res) => {
             }, process.env.SECRETKEY, {expiresIn: '1d'})
             res.json({ _token: token });
         } else {
-            res.status(401).json({ error: 'Email or password not match' });
+            res.status(401).json({ message: 'Email or password not match' });
         }
     } catch (error) {
         res.status(500).json({message: "Internal Server Error"});
