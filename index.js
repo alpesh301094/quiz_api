@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const bodyParser = require('body-parser');
+const cors = require('cors')
 // Load environment variables
 require('dotenv').config();
 const PORT = process.env.PORT || 3300;
@@ -22,6 +23,7 @@ db.once('open', () => {
 
 app.use(express.json());
 // OR app.use(bodyParser.json())
+app.use(cors())
 
 // register a route
 app.use('/api', authRoutes);
