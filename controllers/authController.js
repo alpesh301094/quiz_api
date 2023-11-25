@@ -28,12 +28,14 @@ exports.loginUser = async(req, res) => {
         const {email, password} = req.body;
         const user = await User.findOne({ email });
         if (user && (await bcrypt.compare(password, user.password))) {
-            const { password, profilePic, ...others} = user._doc;
+            const { password, _id, createdAt, updatedAt, __v , ...others} = user._doc;
             const token = jwt.sign({
                 id: others._id,
-                email: others.email
+                email: others.email,
+                profilePic: others.profilePic,
             }, process.env.SECRETKEY, {expiresIn: '1d'})
-            res.json({ _token: token });
+            others._token = token;
+            res.json({message: 'Login successful', data: others});
         } else {
             res.status(401).json({ message: 'Email or password not match' });
         }
