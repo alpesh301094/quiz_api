@@ -21,6 +21,7 @@ db.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
+app.use('/upload', express.static('upload'));
 app.use(express.json());
 // OR app.use(bodyParser.json())
 app.use(cors())

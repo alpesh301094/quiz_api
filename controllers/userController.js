@@ -2,8 +2,9 @@ const User = require('../models/user');
 const fs = require('fs');
 
 exports.userProfile = async (req, res) => {
-    const {_id, name, email} = await User.findById(req.user.id);
-    res.status(200).json({data: {_id, name, email}});
+    const {_id, name, email, profilePic} = await User.findById(req.user.id);
+    let profileOriginalPath = `http://localhost:${process.env.PORT}/${profilePic}`;
+    res.status(200).json({data: {_id, name, email, profileOriginalPath}});
 }
 
 exports.updateUserProfile = async (req, res) => {
@@ -18,6 +19,10 @@ exports.updateUserProfile = async (req, res) => {
 }
 
 exports.userProfilePhoto = async (req, res) => {
+    if(!req.file){
+        res.status(400).json({message: "Profile not update"});
+        return;
+    }
     const { path } = req.file;
     try {
         // await User.findById(req.user.id).update({profilePic: path}); // simple update
@@ -34,11 +39,13 @@ exports.userProfilePhoto = async (req, res) => {
                 }
             });
         }
-
-        userData.profilePic = path;
+        
+        userData.profilePic = path.replace(/\\/g, '/');
         await userData.save();
+        
+        let profileOriginalPath = `http://localhost:${process.env.PORT}/${userData.profilePic}`;
 
-        res.status(200).json({message: "Success"});
+        res.status(200).json({message: "Success", data: {profile: profileOriginalPath}});
     } catch (error) {
         res.status(400).json({message: "Profile not update"});
     }
