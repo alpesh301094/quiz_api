@@ -2,13 +2,26 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const bodyParser = require('body-parser');
-const cors = require('cors')
+const http = require('http');
+const socketIO = require('socket.io');
+const cors = require('cors');
+
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: 'http://localhost:4400',
+    methods: ['GET', 'POST'],
+  },
+});
+
 // Load environment variables
 require('dotenv').config();
 const PORT = process.env.PORT || 3300;
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const quizRoutes = require('./routes/quizRoutes');
+const Message = require('./models/message');
+const { sendMessageOnSocket } = require('./controllers/userController');
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -24,13 +37,45 @@ db.once('open', () => {
 app.use('/upload', express.static('upload'));
 app.use(express.json());
 // OR app.use(bodyParser.json())
-app.use(cors())
+const corsOptions = {
+  origin: 'http://localhost:4400', // Replace with your Angular app's URL
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 // register a route
 app.use('/api', authRoutes);
 app.use('/api', userRoutes)
 app.use('/api/quiz', quizRoutes)
 
-app.listen(PORT, function(){
+// socket code
+io.on('connection', (socket) => {
+  console.log('A user connected');
+  // Listen for chat messages
+  socket.on('chatMessage', (message) => {
+    try {
+      sendMessageOnSocket({ 
+       sender : message.senderId,
+       receiver : message.receiverId,
+       message : message.message
+      })
+      io.emit('chatMessage', { 
+        sender : message.senderId,
+        receiver : message.receiverId,
+        message : message.message,
+        timestamp: new Date()
+       });
+    } catch (error) {
+      io.emit('error', { message: 'Error saving message to the database' });
+    }
+  });
+
+  // Handle disconnect
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+server.listen(PORT, function(){
     console.log(`Server running at ${PORT}`);
 })
