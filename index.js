@@ -9,7 +9,7 @@ const cors = require('cors');
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: 'http://localhost:4400',
+    origin: 'http://localhost:4200',
     methods: ['GET', 'POST'],
   },
 });
@@ -38,7 +38,7 @@ app.use('/upload', express.static('upload'));
 app.use(express.json());
 // OR app.use(bodyParser.json())
 const corsOptions = {
-  origin: 'http://localhost:4400', // Replace with your Angular app's URL
+  origin: 'http://localhost:4200', // Replace with your Angular app's URL
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
